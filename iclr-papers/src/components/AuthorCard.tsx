@@ -10,11 +10,13 @@ import {
     Favorite, FavoriteBorder, 
     ExpandMore, ExpandLess,
     Article as ArticleIcon,
-    Comment as CommentIcon
+    Comment as CommentIcon,
+    Person as PersonIcon
 } from '@mui/icons-material';
 
 interface AuthorCardProps {
     author: string;
+    authorId: string;
     papers: Paper[];
     onPaperClick?: (paper: Paper) => void;
 }
@@ -44,16 +46,16 @@ function getAuthorStats(papers: Paper[]) {
     return stats;
 }
 
-export default function AuthorCard({ author, papers, onPaperClick }: AuthorCardProps) {
+export default function AuthorCard({ author, authorId, papers, onPaperClick }: AuthorCardProps) {
     const [isFavorite, setIsFavorite] = useState(() => {
         const userData = loadUserData();
-        return userData.favoriteAuthors.includes(author);
+        return userData.favoriteAuthors.includes(authorId);
     });
     const [expanded, setExpanded] = useState(false);
     const [commentDialogOpen, setCommentDialogOpen] = useState(false);
     const [comment, setComment] = useState(() => {
         const userData = loadUserData();
-        return userData.authorComments?.[author]?.comments || '';
+        return userData.authorComments?.[authorId]?.comments || '';
     });
 
     const stats = getAuthorStats(papers);
@@ -61,13 +63,13 @@ export default function AuthorCard({ author, papers, onPaperClick }: AuthorCardP
     const toggleFavorite = () => {
         const userData = loadUserData();
         if (isFavorite) {
-            userData.favoriteAuthors = userData.favoriteAuthors.filter(a => a !== author);
+            userData.favoriteAuthors = userData.favoriteAuthors.filter(a => a !== authorId);
             // 删除评论
-            if (userData.authorComments && userData.authorComments[author]) {
-                delete userData.authorComments[author];
+            if (userData.authorComments && userData.authorComments[authorId]) {
+                delete userData.authorComments[authorId];
             }
         } else {
-            userData.favoriteAuthors.push(author);
+            userData.favoriteAuthors.push(authorId);
         }
         saveUserData(userData);
         setIsFavorite(!isFavorite);
@@ -80,7 +82,7 @@ export default function AuthorCard({ author, papers, onPaperClick }: AuthorCardP
             userData.authorComments = {};
         }
         // 保存评论
-        userData.authorComments[author] = {
+        userData.authorComments[authorId] = {
             comments: comment,
             timestamp: Date.now()
         };
@@ -103,6 +105,32 @@ export default function AuthorCard({ author, papers, onPaperClick }: AuthorCardP
                             {isFavorite ? <Favorite color="error" /> : <FavoriteBorder />}
                         </IconButton>
                     </Box>
+                </Box>
+
+                {/* 添加 OpenReview 个人资料链接 */}
+                <Box sx={{ display: 'flex', gap: 2, ml: 0, mb: 2, mt: 0.5 }}>
+                    <Tooltip title="View on OpenReview">
+                        <Box 
+                            component="a" 
+                            href={`https://openreview.net/profile?id=${authorId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                color: 'text.secondary',
+                                textDecoration: 'none',
+                                fontSize: '0.875rem',
+                                '&:hover': { 
+                                    color: 'primary.main',
+                                    textDecoration: 'underline'
+                                }
+                            }}
+                        >
+                            <PersonIcon fontSize="small" sx={{ mr: 0.5 }} />
+                            OpenReview Profile
+                        </Box>
+                    </Tooltip>
                 </Box>
 
                 <Typography variant="body2" color="textSecondary" gutterBottom>

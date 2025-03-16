@@ -28,7 +28,7 @@ export default function FavoritePapers() {
     const [authorSearchTerm, setAuthorSearchTerm] = useState<string>('');
 
     // 用于作者显示的状态
-    const [authorPapers, setAuthorPapers] = useState<{ [author: string]: Paper[] }>({});
+    const [authorPapers, setAuthorPapers] = useState<{ [authorId: string]: { name: string, papers: Paper[] } }>({});
 
     const [selectedPaper, setSelectedPaper] = useState<Paper | null>(null);
 
@@ -53,15 +53,22 @@ export default function FavoritePapers() {
             setKeywords(Array.from(allKeywords));
             setAreas(Array.from(allAreas));
 
-            // 处理收藏的作者
-            const authorMap: { [author: string]: Paper[] } = {};
+            // 处理收藏的作者 - 使用作者ID
+            const authorMap: { [authorId: string]: { name: string, papers: Paper[] } } = {};
             allPapersData.forEach(paper => {
-                paper.authors.forEach(author => {
-                    if (userData.favoriteAuthors.includes(author)) {
-                        if (!authorMap[author]) {
-                            authorMap[author] = [];
+                paper.authors.forEach((author, index) => {
+                    const authorId = paper.authorids[index];
+                    if (userData.favoriteAuthors.includes(authorId)) {
+                        if (!authorMap[authorId]) {
+                            authorMap[authorId] = {
+                                name: author,
+                                papers: []
+                            };
                         }
-                        authorMap[author].push(paper);
+                        // 避免重复添加同一篇论文
+                        if (!authorMap[authorId].papers.some(p => p.title === paper.title)) {
+                            authorMap[authorId].papers.push(paper);
+                        }
                     }
                 });
             });
@@ -181,11 +188,12 @@ export default function FavoritePapers() {
                         <PaperCard key={index} paper={paper} allPapers={allPapers} />
                     ))
                 ) : (
-                    pageContent.items.map(([author, papers]) => (
+                    pageContent.items.map(([authorId, authorData]) => (
                         <AuthorCard 
-                            key={author} 
-                            author={author} 
-                            papers={allPapers.filter(p => p.authors.includes(author))}
+                            key={authorId} 
+                            author={authorData.name} 
+                            authorId={authorId}
+                            papers={authorData.papers}
                             onPaperClick={setSelectedPaper}
                         />
                     ))

@@ -10,7 +10,8 @@ import {
 import { 
     Favorite, FavoriteBorder, ExpandMore, ExpandLess,
     Comment as CommentIcon, Launch as LaunchIcon,
-    Description as DescriptionIcon 
+    Description as DescriptionIcon,
+    Person as PersonIcon 
 } from '@mui/icons-material';
 
 interface AuthorStats {
@@ -47,15 +48,16 @@ function getAuthorStats(papers: Paper[]): AuthorStats {
 
 interface AuthorDialogProps {
     author: string;
+    authorId: string;
     papers: Paper[];
     open: boolean;
     onClose: () => void;
 }
 
-function AuthorDialog({ author, papers, open, onClose }: AuthorDialogProps) {
+function AuthorDialog({ author, authorId, papers, open, onClose }: AuthorDialogProps) {
     const [isFavorite, setIsFavorite] = useState(() => {
         const userData = loadUserData();
-        return userData.favoriteAuthors.includes(author);
+        return userData.favoriteAuthors.includes(authorId);
     });
 
     const stats = getAuthorStats(papers);
@@ -63,9 +65,9 @@ function AuthorDialog({ author, papers, open, onClose }: AuthorDialogProps) {
     const toggleFavorite = () => {
         const userData = loadUserData();
         if (isFavorite) {
-            userData.favoriteAuthors = userData.favoriteAuthors.filter(a => a !== author);
+            userData.favoriteAuthors = userData.favoriteAuthors.filter(a => a !== authorId);
         } else {
-            userData.favoriteAuthors.push(author);
+            userData.favoriteAuthors.push(authorId);
         }
         saveUserData(userData);
         setIsFavorite(!isFavorite);
@@ -82,6 +84,31 @@ function AuthorDialog({ author, papers, open, onClose }: AuthorDialogProps) {
                 </Box>
             </DialogTitle>
             <DialogContent>
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    <Tooltip title="View on OpenReview">
+                        <Box 
+                            component="a" 
+                            href={`https://openreview.net/profile?id=${authorId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                color: 'text.secondary',
+                                textDecoration: 'none',
+                                fontSize: '0.875rem',
+                                '&:hover': { 
+                                    color: 'primary.main',
+                                    textDecoration: 'underline'
+                                }
+                            }}
+                        >
+                            <PersonIcon fontSize="small" sx={{ mr: 0.5 }} />
+                            OpenReview Profile
+                        </Box>
+                    </Tooltip>
+                </Box>
+
                 <Typography variant="body2" color="textSecondary" gutterBottom>
                     {papers.length} papers in ICLR 2025 
                     ({stats.oral} Oral, {stats.spotlight} Spotlight, {stats.poster} Poster)
@@ -113,6 +140,7 @@ export default function PaperCard({ paper, allPapers = [] }: PaperCardProps) {
     const [expanded, setExpanded] = useState(false);
     const [commentDialogOpen, setCommentDialogOpen] = useState(false);
     const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
+    const [selectedAuthorId, setSelectedAuthorId] = useState<string | null>(null);
     const [paperData, setPaperData] = useState<PaperComment>({
         status: null,
         rating: null,
@@ -164,11 +192,18 @@ export default function PaperCard({ paper, allPapers = [] }: PaperCardProps) {
     };
 
     const handleAuthorClick = (author: string) => {
+        const authorIndex = paper.authors.indexOf(author);
+        const authorId = paper.authorids[authorIndex];
+        
         setSelectedAuthor(author);
+        setSelectedAuthorId(authorId);
     };
 
     const getAuthorPapers = (author: string) => {
-        return allPapers.filter(p => p.authors.includes(author));
+        return allPapers.filter(p => {
+            const authorIndex = p.authors.indexOf(author);
+            return authorIndex !== -1 && p.authorids[authorIndex] === selectedAuthorId;
+        });
     };
 
     return (
@@ -389,12 +424,16 @@ export default function PaperCard({ paper, allPapers = [] }: PaperCardProps) {
                 </CardContent>
             </Card>
 
-            {selectedAuthor && (
+            {selectedAuthor && selectedAuthorId && (
                 <AuthorDialog
                     author={selectedAuthor}
+                    authorId={selectedAuthorId}
                     papers={getAuthorPapers(selectedAuthor)}
                     open={!!selectedAuthor}
-                    onClose={() => setSelectedAuthor(null)}
+                    onClose={() => {
+                        setSelectedAuthor(null);
+                        setSelectedAuthorId(null);
+                    }}
                 />
             )}
 

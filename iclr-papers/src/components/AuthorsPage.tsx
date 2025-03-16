@@ -6,7 +6,10 @@ import { Box, TextField, Typography, Pagination } from '@mui/material';
 import PaperDialog from './PaperDialog';
 
 type AuthorPapers = {
-    [author: string]: Paper[];
+    [authorId: string]: {
+        name: string;
+        papers: Paper[];
+    };
 };
 
 const ITEMS_PER_PAGE = 20;
@@ -23,11 +26,15 @@ export default function AuthorsPage() {
             const authorMap: AuthorPapers = {};
             
             papers.forEach(paper => {
-                paper.authors.forEach(author => {
-                    if (!authorMap[author]) {
-                        authorMap[author] = [];
+                paper.authors.forEach((author, index) => {
+                    const authorId = paper.authorids[index];
+                    if (!authorMap[authorId]) {
+                        authorMap[authorId] = {
+                            name: author,
+                            papers: []
+                        };
                     }
-                    authorMap[author].push(paper);
+                    authorMap[authorId].papers.push(paper);
                 });
             });
             
@@ -38,10 +45,12 @@ export default function AuthorsPage() {
     }, []);
 
     const filteredAuthors = Object.entries(authorPapers)
-        .filter(([author, _]) => 
-            author.toLowerCase().includes(searchTerm.toLowerCase())
+        .filter(([authorId, authorData]) => 
+            authorData.name.toLowerCase().includes(searchTerm.toLowerCase())
         )
-        .sort(([authorA], [authorB]) => authorA.localeCompare(authorB));
+        .sort(([, authorDataA], [, authorDataB]) => 
+            authorDataA.name.localeCompare(authorDataB.name)
+        );
 
     const pageCount = Math.ceil(filteredAuthors.length / ITEMS_PER_PAGE);
     const displayedAuthors = filteredAuthors.slice(
@@ -68,11 +77,12 @@ export default function AuthorsPage() {
             </Typography>
 
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 2 }}>
-                {displayedAuthors.map(([author, papers]) => (
+                {displayedAuthors.map(([authorId, authorData]) => (
                     <AuthorCard 
-                        key={author} 
-                        author={author} 
-                        papers={papers}
+                        key={authorId} 
+                        author={authorData.name}
+                        authorId={authorId}
+                        papers={authorData.papers}
                         onPaperClick={setSelectedPaper}
                     />
                 ))}
