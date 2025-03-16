@@ -3,12 +3,18 @@
 A web application for exploring papers and preparing for a specific conference (ICLR 2025 in this case). You can use this to browse through all the papers in the conference, filter them by various criteria, and mark your favaorite papers and authors for easy access later.
 Built with React, TypeScript, and Material-UI.
 
-<div style="display: flex; overflow-x: auto; gap: 10px;">
-    <img src="image_allpapers.png" style="flex: 1; max-width: 33%; height: auto; object-fit: contain;">
-    <img src="image_authors.png" style="flex: 1; max-width: 33%; height: auto; object-fit: contain;">
-    <img src="image_favorites.png" style="flex: 1; max-width: 33%; height: auto; object-fit: contain;">
-</div>
-
+<p align="center">
+  <table>
+    <tr>
+      <td><img src="image_allpapers.png" width="100%" alt="All Papers View"></td>
+      <td><img src="image_authors.png" width="100%" alt="Authors View"></td>
+    </tr>
+    <tr>
+      <td><img src="image_favorites2.png" width="100%" alt="Favorites View"></td>
+      <td><img src="image_favorites1.png" width="100%" alt="Favorites View 2"></td>
+    </tr>
+  </table>
+</p>
 
 
 ## Features
