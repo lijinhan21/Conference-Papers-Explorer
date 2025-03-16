@@ -23,12 +23,14 @@ Built with React, TypeScript, and Material-UI.
 - Node.js (v14 or later)
 - npm
 
+Visit the [official Node.js website](https://nodejs.org/) to download and install Node.js. You can verify the installation by running `node -v` and `npm -v` in your terminal.
+
 ### Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/iclr-papers.git
-   cd iclr-papers
+   git clone git@github.com:lijinhan21/Conference-Papers-Explorer.git
+   cd Conference-Papers-Explorer/iclr-papers
    ```
 
 2. Install dependencies:
