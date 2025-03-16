@@ -13,6 +13,7 @@ import {
     Description as DescriptionIcon,
     Person as PersonIcon 
 } from '@mui/icons-material';
+import AuthorDialog from './AuthorDialog';  // 导入独立的 AuthorDialog 组件
 
 interface AuthorStats {
     oral: number;
@@ -44,91 +45,6 @@ function getAuthorStats(papers: Paper[]): AuthorStats {
 
     stats.averageScore = Number((stats.averageScore / papers.length).toFixed(2));
     return stats;
-}
-
-interface AuthorDialogProps {
-    author: string;
-    authorId: string;
-    papers: Paper[];
-    open: boolean;
-    onClose: () => void;
-}
-
-function AuthorDialog({ author, authorId, papers, open, onClose }: AuthorDialogProps) {
-    const [isFavorite, setIsFavorite] = useState(() => {
-        const userData = loadUserData();
-        return userData.favoriteAuthors.includes(authorId);
-    });
-
-    const stats = getAuthorStats(papers);
-
-    const toggleFavorite = () => {
-        const userData = loadUserData();
-        if (isFavorite) {
-            userData.favoriteAuthors = userData.favoriteAuthors.filter(a => a !== authorId);
-        } else {
-            userData.favoriteAuthors.push(authorId);
-        }
-        saveUserData(userData);
-        setIsFavorite(!isFavorite);
-    };
-
-    return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    {author}
-                    <IconButton onClick={toggleFavorite}>
-                        {isFavorite ? <Favorite color="error" /> : <FavoriteBorder />}
-                    </IconButton>
-                </Box>
-            </DialogTitle>
-            <DialogContent>
-                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                    <Tooltip title="View on OpenReview">
-                        <Box 
-                            component="a" 
-                            href={`https://openreview.net/profile?id=${authorId}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            sx={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                color: 'text.secondary',
-                                textDecoration: 'none',
-                                fontSize: '0.875rem',
-                                '&:hover': { 
-                                    color: 'primary.main',
-                                    textDecoration: 'underline'
-                                }
-                            }}
-                        >
-                            <PersonIcon fontSize="small" sx={{ mr: 0.5 }} />
-                            OpenReview Profile
-                        </Box>
-                    </Tooltip>
-                </Box>
-
-                <Typography variant="body2" color="textSecondary" gutterBottom>
-                    {papers.length} papers in ICLR 2025 
-                    ({stats.oral} Oral, {stats.spotlight} Spotlight, {stats.poster} Poster)
-                </Typography>
-                <Typography variant="body2" color="textSecondary" gutterBottom>
-                    Average Score: {stats.averageScore}
-                </Typography>
-                <Box sx={{ mt: 2 }}>
-                    {papers.map((paper, index) => (
-                        <Typography key={index} variant="body2" sx={{ mb: 1 }}>
-                            • {paper.title}
-                            <Typography component="span" color="textSecondary">
-                                {' '}({paper.venue}, Score: {paper.average_rating})
-                            </Typography>
-                        </Typography>
-                    ))}
-                </Box>
-            </DialogContent>
-        </Dialog>
-    );
 }
 
 interface PaperCardProps {
@@ -282,13 +198,14 @@ export default function PaperCard({ paper, allPapers = [] }: PaperCardProps) {
 
                     {isFavorite && paperData.status && (
                         <Typography 
-                            variant="body2" 
+                            variant="body1"
                             sx={{ 
                                 color: paperData.status === 'TODO' ? 'warning.main' : 'success.main',
                                 fontWeight: 500,
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: 1
+                                gap: 1,
+                                mb: 2
                             }}
                         >
                             Status: {paperData.status}
@@ -296,11 +213,11 @@ export default function PaperCard({ paper, allPapers = [] }: PaperCardProps) {
                                 <Typography 
                                     component="span" 
                                     sx={{ 
-                                        color: 'primary.main',
+                                        color: '#FFD700',
                                         ml: 1
                                     }}
                                 >
-                                    • Rating: {paperData.rating}★
+                                    {paperData.rating}★
                                 </Typography>
                             )}
                         </Typography>
@@ -434,6 +351,7 @@ export default function PaperCard({ paper, allPapers = [] }: PaperCardProps) {
                         setSelectedAuthor(null);
                         setSelectedAuthorId(null);
                     }}
+                    useSimpleView={true}  // 使用简单视图，类似于原来内部定义的 AuthorDialog
                 />
             )}
 
