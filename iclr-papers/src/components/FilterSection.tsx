@@ -1,4 +1,5 @@
-import { FormControl, InputLabel, Select, MenuItem, TextField, Box } from '@mui/material';
+import { FormControl, InputLabel, Select, MenuItem, TextField, Box, Autocomplete } from '@mui/material';
+import { useState, useMemo } from 'react';
 
 interface FilterSectionProps {
     keywords: string[];
@@ -21,19 +22,43 @@ export default function FilterSection({
     onAreaChange,
     onAuthorSearchChange
 }: FilterSectionProps) {
+    // 添加本地搜索状态
+    const [inputValue, setInputValue] = useState('');
+    
+    // 根据输入过滤关键词
+    const filteredOptions = useMemo(() => {
+        if (!inputValue) {
+            // 当没有输入时，只显示前100个选项
+            return keywords.slice(0, 100);
+        }
+        
+        const searchTerm = inputValue.toLowerCase();
+        return keywords
+            .filter(keyword => keyword.toLowerCase().includes(searchTerm))
+            .slice(0, 100); // 最多显示100个匹配结果
+    }, [keywords, inputValue]);
+
     return (
         <Box className="filter-section">
             <FormControl fullWidth>
-                <InputLabel>Keyword</InputLabel>
-                <Select
+                <Autocomplete
                     value={selectedKeyword}
-                    onChange={(e) => onKeywordChange(e.target.value as string)}
-                >
-                    <MenuItem value="">All</MenuItem>
-                    {keywords.map(keyword => (
-                        <MenuItem key={keyword} value={keyword}>{keyword}</MenuItem>
-                    ))}
-                </Select>
+                    onChange={(_, newValue) => onKeywordChange(newValue || "")}
+                    inputValue={inputValue}
+                    onInputChange={(_, newInputValue) => setInputValue(newInputValue)}
+                    options={filteredOptions}
+                    renderInput={(params) => <TextField {...params} label="Keyword" />}
+                    filterOptions={(options, params) => {
+                        // 直接使用已经过滤的选项，避免重复过滤
+                        return options;
+                    }}
+                    freeSolo
+                    selectOnFocus
+                    clearOnBlur
+                    handleHomeEndKeys
+                    disableListWrap
+                    loading={keywords.length > 1000}
+                />
             </FormControl>
 
             <FormControl fullWidth>

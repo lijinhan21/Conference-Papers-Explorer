@@ -3,11 +3,13 @@ import { loadUserData, saveUserData } from '../services/dataService';
 import { 
     Dialog, DialogTitle, DialogContent, 
     Typography, IconButton, Box,
-    Link, Collapse
+    Link, Collapse, Tooltip
 } from '@mui/material';
 import { 
     Favorite, FavoriteBorder,
-    ExpandMore, ExpandLess 
+    ExpandMore, ExpandLess,
+    Description as DescriptionIcon,
+    Launch as LaunchIcon
 } from '@mui/icons-material';
 import { useState } from 'react';
 
@@ -52,6 +54,53 @@ export default function PaperDialog({ paper, open, onClose, onAuthorClick }: Pap
                 </Box>
             </DialogTitle>
             <DialogContent>
+                <Box sx={{ display: 'flex', gap: 2, ml: 1, mb: 2.5 }}>
+                    <Tooltip title="View on OpenReview">
+                        <Box 
+                            component="a" 
+                            href={`https://openreview.net/forum?id=${paper.forum}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                color: 'text.secondary',
+                                textDecoration: 'none',
+                                fontSize: '0.875rem',
+                                '&:hover': { 
+                                    color: 'primary.main',
+                                    textDecoration: 'underline'
+                                }
+                            }}
+                        >
+                            <DescriptionIcon fontSize="small" sx={{ mr: 0.5 }} />
+                            OpenReview
+                        </Box>
+                    </Tooltip>
+                    <Tooltip title="View on Cool Papers">
+                        <Box 
+                            component="a" 
+                            href={`https://papers.cool/venue/${paper.forum}@OpenReview`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                color: 'text.secondary',
+                                textDecoration: 'none',
+                                fontSize: '0.875rem',
+                                '&:hover': { 
+                                    color: 'primary.main',
+                                    textDecoration: 'underline'
+                                }
+                            }}
+                        >
+                            <LaunchIcon fontSize="small" sx={{ mr: 0.5 }} />
+                            Cool Papers
+                        </Box>
+                    </Tooltip>
+                </Box>
+                
                 <Typography variant="body2" color="textSecondary" gutterBottom>
                     Authors: {paper.authors.map((author, index) => (
                         <span key={index}>
