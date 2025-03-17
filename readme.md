@@ -6,12 +6,12 @@ Built with React, TypeScript, and Material-UI.
 <p align="center">
   <table>
     <tr>
-      <td><img src="image_allpapers.png" width="100%" alt="All Papers View"></td>
-      <td><img src="image_authors.png" width="100%" alt="Authors View"></td>
+      <td><img src="images/image_allpapers.png" width="100%" alt="All Papers View"></td>
+      <td><img src="images/image_authors.png" width="100%" alt="Authors View"></td>
     </tr>
     <tr>
-      <td><img src="image_favorites2.png" width="100%" alt="Favorites View"></td>
-      <td><img src="image_favorites1.png" width="100%" alt="Favorites View 2"></td>
+      <td><img src="images/image_favorites2.png" width="100%" alt="Favorites View"></td>
+      <td><img src="images/image_favorites1.png" width="100%" alt="Favorites View 2"></td>
     </tr>
   </table>
 </p>

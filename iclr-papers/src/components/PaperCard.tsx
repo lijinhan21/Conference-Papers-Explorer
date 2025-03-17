@@ -74,6 +74,13 @@ export default function PaperCard({ paper, allPapers = [] }: PaperCardProps) {
         setIsFavorite(!!paperComment);
         if (paperComment) {
             setPaperData(paperComment);
+        } else {
+            setPaperData({
+                status: null,
+                rating: null,
+                comments: '',
+                timestamp: Date.now()
+            });
         }
     }, [paper.title]);
 
@@ -89,9 +96,17 @@ export default function PaperCard({ paper, allPapers = [] }: PaperCardProps) {
             });
         } else {
             userData.favoritePapers[paper.title] = {
-                ...paperData,
+                status: null,
+                rating: null,
+                comments: '',
                 timestamp: Date.now()
             };
+            setPaperData({
+                status: null,
+                rating: null,
+                comments: '',
+                timestamp: Date.now()
+            });
         }
         saveUserData(userData);
         setIsFavorite(!isFavorite);
