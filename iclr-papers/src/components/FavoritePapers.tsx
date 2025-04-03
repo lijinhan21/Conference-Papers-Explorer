@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Paper } from '../types';
+import { Paper, Author } from '../types';
 import { loadPapers, loadUserData } from '../services/dataService';
 import PaperCard from './PaperCard';
 import AuthorCard from './AuthorCard';
@@ -26,6 +26,8 @@ export default function FavoritePapers() {
     const [selectedKeyword, setSelectedKeyword] = useState<string>('');
     const [selectedArea, setSelectedArea] = useState<string>('');
     const [authorSearchTerm, setAuthorSearchTerm] = useState<string>('');
+    const [selectedStatus, setSelectedStatus] = useState<'all' | 'TODO' | 'Done'>('all');
+    const [selectedRating, setSelectedRating] = useState<number | null>(null);
 
     // 用于作者显示的状态
     const [authorPapers, setAuthorPapers] = useState<{ [authorId: string]: { name: string, papers: Paper[] } }>({});
@@ -42,14 +44,14 @@ export default function FavoritePapers() {
             
             // 处理收藏的论文
             const favoritePapers = allPapersData.filter(p => 
-                userData.favoritePapers[p.title]
+                userData.favoritePapers && userData.favoritePapers[p.title]
             );
             setPapers(favoritePapers);
             setFilteredPapers(favoritePapers);
             
             // 提取关键词和领域
-            const allKeywords = new Set(favoritePapers.flatMap(p => p.keywords));
-            const allAreas = new Set(favoritePapers.map(p => p.primary_area));
+            const allKeywords = new Set(favoritePapers.flatMap(p => p.keywords).filter((k): k is string => k !== undefined));
+            const allAreas = new Set(favoritePapers.map(p => p.primary_area).filter((a): a is string => a !== undefined));
             setKeywords(Array.from(allKeywords));
             setAreas(Array.from(allAreas));
 
@@ -91,6 +93,7 @@ export default function FavoritePapers() {
     useEffect(() => {
         if (displayMode === 'papers') {
             let filtered = [...papers];
+            const userData = loadUserData();
             
             if (selectedKeyword) {
                 filtered = filtered.filter(p => p.keywords.includes(selectedKeyword));
@@ -107,11 +110,27 @@ export default function FavoritePapers() {
                 );
             }
             
+            // 添加TODO/Done状态筛选
+            if (selectedStatus !== 'all') {
+                filtered = filtered.filter(p => {
+                    const paperData = userData.favoritePapers[p.title];
+                    return paperData?.status === selectedStatus;
+                });
+            }
+            
+            // 添加评分筛选
+            if (selectedRating !== null) {
+                filtered = filtered.filter(p => {
+                    const paperData = userData.favoritePapers[p.title];
+                    return paperData?.rating === selectedRating;
+                });
+            }
+            
             filtered.sort((a, b) => b.average_rating - a.average_rating);
             setFilteredPapers(filtered);
         }
         setPage(1);
-    }, [selectedKeyword, selectedArea, authorSearchTerm, papers, displayMode]);
+    }, [selectedKeyword, selectedArea, authorSearchTerm, selectedStatus, selectedRating, papers, displayMode]);
 
     // 获取当前页面要显示的内容
     const getPageContent = () => {
@@ -172,9 +191,13 @@ export default function FavoritePapers() {
                     selectedKeyword={selectedKeyword}
                     selectedArea={selectedArea}
                     authorSearchTerm={authorSearchTerm}
+                    selectedStatus={selectedStatus}
+                    selectedRating={selectedRating}
                     onKeywordChange={setSelectedKeyword}
                     onAreaChange={setSelectedArea}
                     onAuthorSearchChange={setAuthorSearchTerm}
+                    onStatusChange={setSelectedStatus}
+                    onRatingChange={setSelectedRating}
                 />
             )}
 
@@ -184,11 +207,11 @@ export default function FavoritePapers() {
 
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 2 }}>
                 {displayMode === 'papers' ? (
-                    pageContent.items.map((paper, index) => (
+                    (pageContent.items as Paper[]).map((paper, index) => (
                         <PaperCard key={index} paper={paper} allPapers={allPapers} />
                     ))
                 ) : (
-                    pageContent.items.map(([authorId, authorData]) => (
+                    (pageContent.items as [string, { name: string, papers: Paper[] }][]).map(([authorId, authorData]) => (
                         <AuthorCard 
                             key={authorId} 
                             author={authorData.name} 

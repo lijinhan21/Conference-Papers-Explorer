@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import PaperList from './components/PaperList';
 import FavoritePapers from './components/FavoritePapers';
 import AuthorsPage from './components/AuthorsPage';
+import Settings from './components/Settings';
 import { AppBar, Toolbar, Button } from '@mui/material';
 
 // 创建一个新的组件来处理导航栏
@@ -44,6 +45,18 @@ function NavigationBar() {
                 >
                     Favorites
                 </Button>
+                <Button 
+                    color="inherit" 
+                    component={Link} 
+                    to="/settings"
+                    sx={{
+                        borderBottom: location.pathname === '/settings' ? '2px solid white' : 'none',
+                        borderRadius: 0,
+                        marginLeft: 'auto'
+                    }}
+                >
+                    设置
+                </Button>
             </Toolbar>
         </AppBar>
     );
@@ -57,6 +70,7 @@ function App() {
                 <Route path="/" element={<PaperList />} />
                 <Route path="/favorites" element={<FavoritePapers />} />
                 <Route path="/authors" element={<AuthorsPage />} />
+                <Route path="/settings" element={<Settings />} />
             </Routes>
         </Router>
     );

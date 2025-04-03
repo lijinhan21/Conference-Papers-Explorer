@@ -3,9 +3,70 @@ import { Paper } from '../types';
 import { loadPapers } from '../services/dataService';
 import PaperCard from './PaperCard';
 import FilterSection from './FilterSection';
-import { Button, Pagination, Box } from '@mui/material';
+import { 
+    Button, Pagination, Box, TextField, FormControl, 
+    InputLabel, Select, MenuItem, Autocomplete 
+} from '@mui/material';
 
 const ITEMS_PER_PAGE = 20;  // 每页显示20篇论文
+
+// Create a simplified version of FilterSection specifically for PaperList
+interface SimplifiedFilterSectionProps {
+    keywords: string[];
+    areas: string[];
+    selectedKeyword: string;
+    selectedArea: string;
+    authorSearchTerm: string;
+    onKeywordChange: (keyword: string) => void;
+    onAreaChange: (area: string) => void;
+    onAuthorSearchChange: (search: string) => void;
+}
+
+const SimplifiedFilterSection = ({ 
+    keywords, 
+    areas, 
+    selectedKeyword, 
+    selectedArea, 
+    authorSearchTerm,
+    onKeywordChange,
+    onAreaChange,
+    onAuthorSearchChange
+}: SimplifiedFilterSectionProps) => {
+    return (
+        <Box className="filter-section" sx={{ display: 'flex', gap: 2 }}>
+            <FormControl fullWidth>
+                <Autocomplete
+                    value={selectedKeyword}
+                    onChange={(_, newValue) => onKeywordChange(newValue || "")}
+                    options={keywords.slice(0, 100)}
+                    renderInput={(params) => <TextField {...params} label="Keyword" />}
+                    freeSolo
+                />
+            </FormControl>
+
+            <FormControl fullWidth>
+                <InputLabel>Primary Area</InputLabel>
+                <Select
+                    value={selectedArea}
+                    onChange={(e) => onAreaChange(e.target.value as string)}
+                >
+                    <MenuItem value="">All</MenuItem>
+                    {areas.map(area => (
+                        <MenuItem key={area} value={area}>{area}</MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+
+            <TextField
+                fullWidth
+                label="Search Author"
+                value={authorSearchTerm}
+                onChange={(e) => onAuthorSearchChange(e.target.value)}
+                placeholder="Type author name..."
+            />
+        </Box>
+    );
+};
 
 export default function PaperList() {
     const [papers, setPapers] = useState<Paper[]>([]);
@@ -25,11 +86,11 @@ export default function PaperList() {
             setFilteredPapers(data);
             
             // Extract unique keywords and areas
-            const allKeywords = new Set(data.flatMap(p => p.keywords));
-            const allAreas = new Set(data.map(p => p.primary_area));
+            const allKeywords = new Set(data.flatMap(p => p.keywords).filter(k => k !== undefined));
+            const allAreas = new Set(data.map(p => p.primary_area).filter(a => a !== undefined));
             
-            setKeywords(Array.from(allKeywords));
-            setAreas(Array.from(allAreas));
+            setKeywords(Array.from(allKeywords) as string[]);
+            setAreas(Array.from(allAreas) as string[]);
         };
         fetchData();
     }, []);
@@ -47,7 +108,7 @@ export default function PaperList() {
             const searchLower = authorSearchTerm.toLowerCase();
             filtered = filtered.filter(p => 
                 p.authors.some(author => 
-                    author.toLowerCase().includes(searchLower)
+                    typeof author === 'string' ? author.toLowerCase().includes(searchLower) : author.name.toLowerCase().includes(searchLower)
                 )
             );
         }
@@ -67,7 +128,7 @@ export default function PaperList() {
 
     return (
         <div className="paper-list">
-            <FilterSection
+            <SimplifiedFilterSection
                 keywords={keywords}
                 areas={areas}
                 selectedKeyword={selectedKeyword}
